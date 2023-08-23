@@ -3,9 +3,8 @@ import org.example.account.AccountManager;
 import org.example.account.Customer;
 import org.junit.jupiter.api.Test;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThatThrownBy;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.*;
+import static org.assertj.core.api.Assertions.*;
 
 public class MyStoreTest {
     AccountManager mockAccountManager = mock(AccountManager.class);
@@ -20,10 +19,8 @@ public class MyStoreTest {
         Customer customer = new Customer(1000,true,true);
 
         when(mockAccountManager.withdraw(customer, product.getPrice())).thenReturn("success");
-
         myStore.buy(product, customer);
-
-        assertEquals(9, product.getQuantity());
+        assertThat(product.getQuantity()).isEqualTo(9);
     }
     @Test
     public void testSuccessfulPurchaseWithVip() {
@@ -37,8 +34,7 @@ public class MyStoreTest {
         when(mockAccountManager.withdraw(customer, product.getPrice())).thenReturn("success");
 
         myStore.buy(product, customer);
-
-        assertEquals(9, product.getQuantity());
+        assertThat(product.getQuantity()).isEqualTo(9);
     }
     @Test
     public void testOutOfStockPurchase() {
@@ -46,9 +42,9 @@ public class MyStoreTest {
         product.setQuantity(0);
         product.setPrice(15);
         Customer customer = new Customer(1000,true,true);
-        RuntimeException exception = assertThrows(RuntimeException.class, ()-> myStore.buy(product, customer));
-        assertEquals("Product out of stock", exception.getMessage());
-        assertEquals(customer.getBalance(), 1000);
+        assertThatThrownBy(() -> myStore.buy(product, customer)).isInstanceOf(RuntimeException.class)
+                .hasMessage("Product out of stock");
+        assertThat(customer.getBalance()).isEqualTo(1000);
     }
 
     @Test
@@ -61,6 +57,7 @@ public class MyStoreTest {
         when(mockAccountManager.withdraw(customer, product.getPrice())).thenReturn("insufficient balance");
         assertThatThrownBy(() -> myStore.buy(product, customer)).isInstanceOf(RuntimeException.class)
                 .hasMessage("Payment failure: insufficient balance");
-        assertEquals(customer.getBalance(), 1);
+        assertThat(customer.getBalance()).isEqualTo(1);
+
     }
 }
